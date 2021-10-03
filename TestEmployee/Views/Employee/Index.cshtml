@@ -1,0 +1,157 @@
+﻿@model TestEmployee.Models.Employee
+
+@{
+    ViewBag.Title = "Index";
+}
+@*<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>*@
+<script src="~/Content/jquery-3.4.1.js"></script>
+<h2>Index</h2>
+
+<div class="form-horizontal">
+    <h4>Employee</h4>
+    <hr />
+
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", @id = "txtName" } })
+            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Address, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control", @id = "txtAddress" } })
+            @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.DoB, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.DoB, new { htmlAttributes = new { @class = "form-control", @type = "date", @id = "txtDob" } })
+            @Html.ValidationMessageFor(model => model.DoB, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Salery, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Salery, new { htmlAttributes = new { @class = "form-control", @id = "txtSalary" } })
+            @Html.ValidationMessageFor(model => model.Salery, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="button" onclick="SubmitData()" value="Create" class="btn btn-default" />
+        </div>
+    </div>
+</div>
+
+
+<table style="width:100%;width:100%;">
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Address</td>
+            <td>BOB</td>
+            <td>Salary</td>
+            <td>Action</td>
+        </tr>
+    </thead>
+    <tbody id="tabData">
+    </tbody>
+</table>
+
+<script>
+    function SubmitData() {
+        var obj = new Object();
+        obj.Name = $('#txtName').val();
+        obj.Address = $('#txtAddress').val();
+        obj.DoB = $('#txtDob').val();
+        obj.Salery = $('#txtSalary').val();
+        // $.post('https://localhost:44383/api/FormBodyAPI', JSON.stringify(obj), function (data) {
+        $.post('https://localhost:44383/api/Home', obj, function (data) {
+            if (data != "") {
+                // var data = JSON.parse(responce);
+                var htm = "<tr empId=" + data.EmpId + "><td>" + data.Name + "</td><td>" + data.Address + "</td><td>" + data.DoB + "</td><td>" + data.Salery + "</td><td><input type='button' class='edit' onclick='EditRecord()' value='Edit'/><input type='button' style='display:none' class='update' onclick='UpdateData()' value='Update'/><input type='button' onclick='DeleteData(" + data.EmpId + ")' value='Delete'/></td></tr>"
+                $('#tabData').append(htm);
+            }
+        })
+    }
+    function UpdateData() {
+        var tr = $('tr').has(event.target);
+        var td = $(tr).find('td');
+        var obj = new Object();
+        obj.Name = td[0].innerText;
+        obj.EmpId = $(tr).attr('empId');
+        obj.Address = td[1].innerText;
+        obj.DoB = td[2].innerText;
+        obj.Salery = td[3].innerText;
+
+        $.ajax({
+            url: 'https://localhost:44383/api/Home?data=' +  JSON.stringify(obj),
+            type: 'PUT',
+            //data: { data: JSON.stringify(obj) },
+            //data: obj,
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function (data) {
+                if (data) {
+                    var htm = "<tr empId=" + obj.EmpId + "><td>" + obj.Name + "</td><td>" + obj.Address + "</td><td>" + obj.DoB + "</td><td>" + obj.Salery + "</td><td><input type='button' class='edit' onclick='EditRecord()' value='Edit'/><input type='button' style='display:none' class='update' onclick='UpdateData()' value='Update'/><input type='button' onclick='DeleteData(" + obj.EmpId + ")' value='Delete'/></td></tr>"
+                    $('tr[empId="' + obj.EmpId + '"]').replaceWith(htm);
+                }
+            },
+            error: function (error) {
+                console.log(error)
+            }
+        })
+
+    }
+    function DeleteData(id) {
+        $.ajax({
+            url: 'https://localhost:44383/api/Home?id=' + id,
+            type: 'DELETE',
+            //data: { id: id },
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function (data) {
+                if (data) {
+
+                $('tr[empId="' + id + '"]').remove();
+                }
+            },
+            error: function (error) {
+                console.log(error)
+            }
+        })
+
+    }
+    function EditRecord() {
+        var tr = $('tr').has(event.target)
+        $(tr).find('.update').show();
+        $(tr).find('.edit').hide();
+        $(tr).find('td').not('td:last').each(function (index, td) {
+            $(td).attr('contenteditable', true);
+        });
+    }
+    $(function () {
+
+        $.get('https://localhost:44383/api/Home', {}, function (data) {
+            if (data != "") {
+                // var data = JSON.parse(responce);
+                for (var i = 0; i < data.length; i++) {
+                    var htm = "<tr empId=" + data[i].EmpId + "><td>" + data[i].Name + "</td><td>" + data[i].Address + "</td><td>" + data[i].DoB + "</td><td>" + data[i].Salery + "</td><td><input type='button' class='edit' onclick='EditRecord()' value='Edit'/><input type='button' style='display:none' class='update' onclick='UpdateData()' value='Update'/><input type='button' onclick='DeleteData(" + data[i].EmpId + ")' value='Delete'/></td></tr>"
+                    $('#tabData').append(htm);
+                }
+
+            }
+        })
+    })
+    function getElement(id) {
+        return document.querySelector('#' + id);
+    }
+</script>
