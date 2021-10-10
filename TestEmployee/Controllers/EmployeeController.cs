@@ -27,5 +27,17 @@ namespace TestEmployee.Controllers
         {
             return View();
         }
+        
+        public string SaveFile(){
+               Stream inputStream = Request.InputStream;
+               byte[] bytes = new byte[inputStream.Length];
+               inputStream.Read(bytes, 0,bytes.Length);
+               objdl.addImage(bytes);
+               return "Saved";
+        }
+        public ActionResult GetFile(){
+                byte[] bytes =objdl.getImage();
+                return File(bytes,"image/png");
+        }
     }
 }
