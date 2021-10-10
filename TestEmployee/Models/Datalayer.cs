@@ -185,5 +185,37 @@ namespace TestEmployee.Models
             }
             return dt;
         }
+        internal void addImage(byte[] bytes){
+            using(SqlConnection con=new SqlConnection(constr)){
+                try{
+                    con.Open();
+                    string sql="Insert Into TblImg(img) values(@data)";
+                    var p=cmd.CreateParameter();
+                    p.DbType=DbType.Binary;
+                    p.ParameterName="@data";
+                    p.Value=bytes;
+                    cmd.Parameter.Add(p);
+                    var i=cmd.ExecuteNobQuery();
+                }
+                catch(Exception e)
+                {
+                }
+            }
+        }
+        internal byte[] getImage(){
+             using(SqlConnection con=new SqlConnection(constr)){
+                try{
+                    con.Open();
+                    string sql="Select * from TblImg;";
+                    SqlDataAdapter da=new SqlDataAdapter(sql,con);
+                    DataTable dt=new DataTable();
+                    da.Fill(dt);
+                    return (byte[])dt.Rows[0]["img"];
+                }
+                catch(Exception e)
+                {
+                }
+            }
+        }
     }
 }
